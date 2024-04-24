@@ -1,6 +1,18 @@
 version: "3"
 services:
 
+  nginx:
+    container_name: nginx
+    image: docker.io/nginx:latest
+    environment:
+      - NGINX_ENTRYPOINT_LOCAL_RESOLVERS=yes
+      - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./resolver.conf.tmpl:/etc/nginx/templates/resolver.conf.template
+    ports:
+      - "8081-8084:8081-8084"
+
   tempo:
     image: grafana/tempo:latest
     command: [ "-config.file=/etc/tempo.yaml" ]
@@ -18,7 +30,7 @@ services:
   k6-tracing:
     image: ghcr.io/grafana/xk6-client-tracing:latest
     environment:
-      - ENDPOINT=tempo:4317
+      - ENDPOINT=nginx:8082
     restart: always
     depends_on:
       - tempo
